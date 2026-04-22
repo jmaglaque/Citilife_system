@@ -1,0 +1,27 @@
+<?php
+// database.php.example
+// Copy this file to 'database.php' and update the credentials
+
+date_default_timezone_set('Asia/Manila');
+
+if (!defined('PROJECT_DIR')) {
+    $scriptPath = $_SERVER['SCRIPT_NAME'] ?? '/CitiLife-System/index.php';
+    $parts = explode('/', $scriptPath);
+    define('PROJECT_DIR', (isset($parts[1]) && $parts[1] !== 'index.php') ? $parts[1] : 'CitiLife-System');
+}
+
+$host = 'localhost';
+$dbname = 'citilife_db'; 
+$username = 'root';
+$password = 'YOUR_PASSWORD_HERE'; // Leave blank for default XAMPP
+
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+    $pdo->exec("SET time_zone = '+08:00'");
+
+    // Tables will be initialized automatically on the first run
+} catch (PDOException $e) {
+    die("Database connection failed. Error: " . $e->getMessage());
+}
