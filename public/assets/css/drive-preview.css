@@ -1,0 +1,103 @@
+/* 
+ * Google Drive-Style Cinematic Gallery CSS (v4.0)
+ * Redesigned for CitiLife Premium Experience
+ */
+#drive-preview-modal {
+    background: #0a0a0a;
+}
+
+/* Premium Top Bar */
+.drive-top-bar {
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+}
+
+/* Content Area */
+#drive-content-wrapper {
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.report-frame-container {
+    background: #fff;
+    transform-origin: center center;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.8), 0 0 40px rgba(255,255,255,0.05);
+    border-radius: 4px;
+}
+
+/* Instant movement while dragging */
+#drive-content-wrapper.is-dragging .report-frame-container {
+    transition: none !important;
+}
+
+/* Bottom Thumbnail Strip */
+#drive-thumb-strip {
+    scroll-behavior: smooth;
+    transition: all 0.3s ease;
+}
+
+.drive-thumb-item {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.drive-thumb-item:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    color: white;
+    transform: translateY(-4px);
+}
+
+.drive-thumb-item.active {
+    border-color: #ef4444; /* Tailwind red-500 */
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+    transform: translateY(-6px) scale(1.05);
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.drive-thumb-item img {
+    width: 100%;
+    height: 100%;
+    object-cover: cover;
+}
+
+/* Panning Overlay */
+#drive-panning-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 50; /* Above content, below controls */
+    display: none;
+    cursor: grab;
+}
+#drive-panning-overlay.active {
+    display: block;
+}
+#drive-panning-overlay.dragging {
+    cursor: grabbing;
+}
+
+/* Hide scrollbar for the thumb strip */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
