@@ -198,8 +198,8 @@ class CaseModel {
                     $notificationModel->add(
                         "Reading Completed", 
                         "Your X-ray for Case {$cData['case_number']} has been read. It will be released shortly.", 
-                        $patientUserId, // Recipient userId
-                        null, 
+                        "/" . PROJECT_DIR . "/index.php?role=patient&page=xray-status&case_id={$caseId}", 
+                        $patientUserId,
                         'patient'
                     );
                 }

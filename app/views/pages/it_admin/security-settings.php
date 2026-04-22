@@ -113,7 +113,8 @@
                 class="px-6 py-3 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-50 transition shadow-sm">
                 Discard Changes
             </button>
-            <button type="submit"
+            <button type="button" 
+                onclick="confirmFormAction(this, 'update_security', 'Confirm Policy Update', 'Are you sure you want to apply these system-wide security changes? All staff accounts will be immediately affected.', 'action', event)"
                 class="px-8 py-3 rounded-xl bg-red-600 text-sm font-bold text-white hover:bg-red-700 shadow-lg shadow-red-500/30 transition transform active:scale-95">
                 Save Security Policies
             </button>

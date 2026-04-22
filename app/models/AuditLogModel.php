@@ -68,9 +68,6 @@ class AuditLogModel {
         if (!in_array($currentRole, ['admin_central', 'it_admin']) && $currentBranchId) {
             $query .= " AND al.branch_id = ?";
             $params[] = $currentBranchId;
-        } else if (in_array($currentRole, ['admin_central', 'it_admin'])) {
-            // Only show logs that belong to a branch (hide the buggy "System-wide" ones)
-            $query .= " AND al.branch_id IS NOT NULL";
         }
 
         if (!empty($filters['search'])) {
@@ -124,9 +121,6 @@ class AuditLogModel {
         if (!in_array($currentRole, ['admin_central', 'it_admin']) && $currentBranchId) {
             $query .= " AND al.branch_id = ?";
             $params[] = $currentBranchId;
-        } else if (in_array($currentRole, ['admin_central', 'it_admin'])) {
-            // Only show logs that belong to a branch (hide the buggy "System-wide" ones)
-            $query .= " AND al.branch_id IS NOT NULL";
         }
 
         if (!empty($filters['search'])) {
@@ -158,7 +152,8 @@ class AuditLogModel {
             $params[] = $filters['end_date'] . ' 23:59:59';
         }
 
-        $query .= " ORDER BY al.created_at DESC LIMIT ? OFFSET ?";
+        $sortOrder = (isset($filters['sort']) && strtolower($filters['sort']) === 'asc') ? 'ASC' : 'DESC';
+        $query .= " ORDER BY al.created_at $sortOrder LIMIT ? OFFSET ?";
         
         $stmt = $this->pdo->prepare($query);
         $idx = 1;

@@ -57,7 +57,7 @@ function saveEditModal() {
     const philhealthId = document.getElementById('modalPhilHealthId').value;
 
     if (!name || !age || !sex || !contact) {
-        alert('Please fill in all required fields');
+        toast('Please fill in all required fields', 'error');
         return;
     }
 
@@ -108,20 +108,19 @@ function saveEditModal() {
 }
 
 document.addEventListener('input', (e) => {
-    if (e.target && (e.target.id === 'search-input' || e.target.id === 'filter-exam' || e.target.id === 'sort-date')) {
+    if (e.target && (e.target.id === 'search-input' || e.target.id === 'filter-priority' || e.target.id === 'sort-date')) {
         applyFilters();
     }
 });
 
 document.addEventListener('change', (e) => {
-    if (e.target && (e.target.id === 'filter-exam' || e.target.id === 'sort-date')) {
+    if (e.target && (e.target.id === 'filter-priority' || e.target.id === 'sort-date')) {
         applyFilters();
     }
 });
 
 function applyFilters() {
     const search = (document.getElementById('search-input')?.value || '').toLowerCase();
-    const exam = document.getElementById('filter-exam')?.value || 'Filter by Exam Type';
     const sort = document.getElementById('sort-date')?.value || 'Sort by:';
 
     const tbody = document.getElementById('table-body');
@@ -131,11 +130,11 @@ function applyFilters() {
     let visibleCount = 0;
 
     // Sort
-    if (sort === 'Newest Case' || sort === 'Oldest Case') {
+    if (sort === 'Newest Request' || sort === 'Oldest Request') {
         rows.sort((a, b) => {
             const dateA = new Date(a.dataset.date).getTime();
             const dateB = new Date(b.dataset.date).getTime();
-            return sort === 'Newest Case' ? dateB - dateA : dateA - dateB;
+            return sort === 'Newest Request' ? dateB - dateA : dateA - dateB;
         });
 
         rows.forEach(row => tbody.appendChild(row));
@@ -145,22 +144,10 @@ function applyFilters() {
     rows.forEach(row => {
         const name = (row.dataset.name || '').toLowerCase();
         const id = (row.dataset.id || '').toLowerCase();
-        const rowExam = row.dataset.exam || '';
 
         const matchSearch = name.includes(search) || id.includes(search);
-        // Map 'Chest X-ray' to 'Chest PA' to be safe just in case
-        let isExamMatch = false;
-        if (exam === 'Filter by Exam Type' || exam === 'All') {
-            isExamMatch = true;
-        } else if (exam === rowExam) {
-            isExamMatch = true;
-        } else if (exam === 'Chest X-ray' && rowExam === 'Chest PA') {
-            isExamMatch = true;
-        } else if (exam === 'Chest PA' && rowExam === 'Chest X-ray') {
-            isExamMatch = true;
-        }
 
-        if (matchSearch && isExamMatch) {
+        if (matchSearch) {
             row.style.display = '';
             visibleCount++;
         } else {
@@ -183,13 +170,18 @@ function applyFilters() {
     }
 }
 
-// Initial sorting on load
+// Initial sorting on load and re-applying filters after real-time updates
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         const sortSelect = document.getElementById('sort-date');
         if (sortSelect && sortSelect.value === 'Sort by:') {
-            sortSelect.value = 'Newest Case';
+            sortSelect.value = 'Newest Request';
             applyFilters();
         }
     }, 100);
+});
+
+// Re-apply filters when real-time polling updates the table content
+document.addEventListener('realtime:updated', () => {
+    applyFilters();
 });

@@ -294,31 +294,7 @@
     </div>
 </div>
 
-<!-- DELETE CONFIRMATION MODAL -->
-<div id="deleteModal"
-    class="hidden fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-    <div
-        class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all animate-in zoom-in-95 duration-200 p-6 text-center">
-        <div class="h-16 w-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i data-lucide="alert-triangle" class="w-8 h-8 text-red-600"></i>
-        </div>
-        <h3 class="text-xl font-bold text-gray-900 mb-2">Are you sure?</h3>
-        <p class="text-sm text-gray-500 mb-6 font-medium">You are about to delete <span id="deleteBranchName"
-                class="text-gray-900 font-bold"></span>. This action cannot be undone.</p>
-        <form action="" method="POST" class="flex gap-3">
-            <input type="hidden" name="action" value="delete">
-            <input type="hidden" name="branch_id" id="deleteBranchId">
-            <button type="button" onclick="closeDeleteModal()"
-                class="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-colors">
-                Cancel
-            </button>
-            <button type="submit"
-                class="flex-1 py-2.5 rounded-xl bg-red-600 text-sm font-bold text-white hover:bg-red-700 shadow-sm transition-all active:scale-95">
-                Yes, Delete
-            </button>
-        </form>
-    </div>
-</div>
+<!-- Delete Modal Removed (Replaced by SweetAlert2) -->
 
 <script>
     /* ── Dark-mode theming applied via JS inline styles (100% reliable) ── */
@@ -382,14 +358,28 @@
         document.getElementById('editBranchModal').classList.add('hidden');
     }
 
-    function confirmDelete(id, name) {
-        document.getElementById('deleteBranchId').value = id;
-        document.getElementById('deleteBranchName').innerText = name;
-        document.getElementById('deleteModal').classList.remove('hidden');
-    }
-
-    function closeDeleteModal() {
-        document.getElementById('deleteModal').classList.add('hidden');
+    async function confirmDelete(id, name) {
+        const result = await confirmAlert('Delete Branch', `Are you sure you want to delete the branch "${name}"? This action cannot be undone.`, 'Yes, Delete');
+        if (result.isConfirmed) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '';
+            
+            const actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'action';
+            actionInput.value = 'delete';
+            
+            const idInput = document.createElement('input');
+            idInput.type = 'hidden';
+            idInput.name = 'branch_id';
+            idInput.value = id;
+            
+            form.appendChild(actionInput);
+            form.appendChild(idInput);
+            document.body.appendChild(form);
+            form.submit();
+        }
     }
 
     // Pagination State

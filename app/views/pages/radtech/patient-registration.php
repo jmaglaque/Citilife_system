@@ -258,13 +258,16 @@
         togglePhilHealthId();
 
         // Validate PhilHealth ID on form submit
-        document.querySelector('form[method="POST"]').addEventListener('submit', function (e) {
+        document.querySelector('form[method="POST"]').addEventListener('submit', async function (e) {
             // Check if already submitting
             const submitBtn = document.getElementById('btn-submit');
             if (submitBtn.disabled) {
                 e.preventDefault();
                 return;
             }
+
+            // Prevent default immediately to handle async confirmation
+            e.preventDefault();
 
             // ── Sync exam-selector required-check so browser validation passes ──
             document.querySelectorAll('.exam-ms-component').forEach(container => {
@@ -286,16 +289,18 @@
                     idInput.setCustomValidity('PhilHealth ID Number is required.');
                     idInput.reportValidity();
                     idInput.addEventListener('input', () => idInput.setCustomValidity(''), { once: true });
-                    e.preventDefault();
                     return;
                 } else if (!philHealthPattern.test(idInput.value.trim())) {
                     idInput.setCustomValidity('Format must be XX-XXXXXXXXX-X (digits only).');
                     idInput.reportValidity();
                     idInput.addEventListener('input', () => idInput.setCustomValidity(''), { once: true });
-                    e.preventDefault();
                     return;
                 }
             }
+
+            // Show confirmation before proceeding
+            const confirmed = await confirmAlert('Confirm Registration', 'Would you like to confirm registering this patient and creating a new case?');
+            if (!confirmed.isConfirmed) return;
 
             // If we reached here, form is valid and ready to submit
             submitBtn.disabled = true;
@@ -309,6 +314,9 @@
                 </svg>
                 Processing...
             `;
+
+            // Use the native form.submit() to bypass this listener
+            this.submit();
         });
 
         // Check if form-mode is preserved in case of an error, otherwise default to new-patient

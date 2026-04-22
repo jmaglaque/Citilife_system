@@ -1,7 +1,7 @@
 <?php
 /**
- * PatientListsController.php
- * Handles backend logic for the RadTech Today's Queue (Patient List).
+ * ReportReadyController.php
+ * Handles backend logic for the RadTech Report Ready tab.
  */
 
 require_once __DIR__ . '/../../models/CaseModel.php';
@@ -109,7 +109,7 @@ if (isset($_GET['action'])) {
                     );
                 }
             }
-            header("Location: /" . PROJECT_DIR . "/index.php?role=radtech&page=patient-lists");
+            header("Location: /" . PROJECT_DIR . "/index.php?role=radtech&page=report-ready");
             exit;
         } catch (Exception $e) {
             $errorMsg = "Failed to release result: " . $e->getMessage();
@@ -117,14 +117,13 @@ if (isset($_GET['action'])) {
     }
 }
 
-// 3. Fetch and Filter Data
+// 3. Fetch Data
 $branchId = $_SESSION['branch_id'] ?? 1;
 $allPatients = $caseModel->getWorklist($branchId, null, null); 
 
-// Filter logic from original view: Today + Not Released + Approved
+// Filter logic: Not Released + Approved + Status is Report Ready
 $patients = array_filter($allPatients, function($p) {
-    $isToday = date('Y-m-d', strtotime($p['created_at'])) === date('Y-m-d');
     return $p['released'] == 0 
            && $p['approval_status'] === 'Approved'
-           && ($isToday || $p['status'] === 'Report Ready');
+           && $p['status'] === 'Report Ready';
 });

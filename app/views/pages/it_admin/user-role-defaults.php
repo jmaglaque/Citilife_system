@@ -158,11 +158,11 @@
                     lucide.createIcons();
                 }, 2000);
             } else {
-                alert('Failed to update permission: ' + (data.message || 'Unknown error'));
+                errorAlert('Update Failed', data.message || 'Unknown error');
             }
         } catch (err) {
             console.error('Update failed:', err);
-            alert('A network error occurred while updating permissions.');
+            errorAlert('Network Error', 'A network error occurred while updating permissions.');
         }
     }
 

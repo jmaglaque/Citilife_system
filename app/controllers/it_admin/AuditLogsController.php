@@ -16,7 +16,8 @@ $filters = [
     'role'        => $_GET['role'] ?? '',
     'module'      => $_GET['module'] ?? '',
     'start_date'  => $_GET['start_date'] ?? '',
-    'end_date'    => $_GET['end_date'] ?? ''
+    'end_date'    => $_GET['end_date'] ?? '',
+    'sort'        => $_GET['sort'] ?? 'desc'
 ];
 
 // 2. Pagination Logic

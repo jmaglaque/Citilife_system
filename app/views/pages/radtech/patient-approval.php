@@ -2,9 +2,13 @@
 require_once __DIR__ . '/../../../config/database.php';
 require_once __DIR__ . '/../../../models/CaseModel.php';
 require_once __DIR__ . '/../../../models/NotificationModel.php';
+require_once __DIR__ . '/../../../models/AuditLogModel.php';
 
 $caseModel = new \CaseModel($pdo);
 $notificationModel = new \NotificationModel($pdo);
+$auditLogModel = new \AuditLogModel($pdo);
+$currentUserId = $_SESSION['user_id'] ?? 0;
+$branchId = $_SESSION['branch_id'] ?? 1;
 
 $successMsg = '';
 $errorMsg = '';
@@ -18,6 +22,13 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
 
         if ($result['success']) {
             $successMsg = $result['message'];
+            
+            // Log the action
+            $caseData = $caseModel->getCaseById($id);
+            $patientName = $caseData ? ($caseData['first_name'] . ' ' . $caseData['last_name']) : "Unknown";
+            $logAction = ($action === 'approve') ? "Approved patient registration" : "Rejected patient registration";
+            $details = "Patient: $patientName, Case: " . ($caseData['case_number'] ?? $id);
+            $auditLogModel->addLog($currentUserId, $logAction, 'Patient Records', 'Case', $id, $details, $branchId);
         } else {
             $errorMsg = $result['message'];
         }
@@ -61,10 +72,14 @@ $pendingPatients = $caseModel->getPendingCases($branchId);
 
 <!-- Navigation Tabs -->
 <div class="mt-6 border-b border-gray-200">
-    <nav class="flex gap-0">
+    <nav class="flex gap-8">
         <a href="/<?= PROJECT_DIR ?>/index.php?role=radtech&page=patient-lists"
             class="flex items-center gap-2 px-1 py-3 text-sm font-medium <?php echo ($_GET['page'] ?? 'patient-lists') === 'patient-lists' ? 'text-red-600 border-b-2 border-red-600 hover:text-red-700' : 'text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300'; ?>">
             Today's Queue
+        </a>
+        <a href="/<?= PROJECT_DIR ?>/index.php?role=radtech&page=report-ready"
+            class="flex items-center gap-2 px-1 py-3 text-sm font-medium <?php echo ($_GET['page'] ?? 'patient-lists') === 'report-ready' ? 'text-red-600 border-b-2 border-red-600 hover:text-red-700' : 'text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300'; ?>">
+            Report Ready
         </a>
         <a href="/<?= PROJECT_DIR ?>/index.php?role=radtech&page=patient-approval"
             class="flex items-center gap-2 px-1 py-3 text-sm font-medium <?php echo ($_GET['page'] ?? 'patient-lists') === 'patient-approval' ? 'text-red-500 border-b-2 border-red-600 hover:text-red-700' : 'text-gray-600 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300'; ?>">
@@ -77,23 +92,11 @@ $pendingPatients = $caseModel->getPendingCases($branchId);
     <div class="flex gap-4 items-center">
         <input type="text" id="search-input" placeholder="Search by patient name or case number..."
             class="flex-1 rounded-lg border border-input bg-background px-4 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring">
-        <select id="filter-exam"
-            class="w-48 rounded-lg border border-input bg-background px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-ring">
-            <option>Filter by Exam Type</option>
-            <option>All</option>
-            <option>Chest PA</option>
-            <option>Chest X-ray</option>
-            <option>Abdominal X-ray</option>
-            <option>Extremity X-ray</option>
-            <option>Skull X-ray</option>
-            <option>Lumbar Spine</option>
-            <option>Pelvis</option>
-        </select>
         <select id="sort-date"
             class="w-48 rounded-lg border border-input bg-background px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-ring">
             <option>Sort by:</option>
-            <option>Newest Case</option>
-            <option>Oldest Case</option>
+            <option>Newest Request</option>
+            <option>Oldest Request</option>
         </select>
     </div>
 </div>
@@ -123,6 +126,7 @@ $pendingPatients = $caseModel->getPendingCases($branchId);
                         <tr class="border-b hover:bg-gray-50 transition-colors record-row"
                             data-id="<?= htmlspecialchars($patient['case_number']) ?>"
                             data-name="<?= htmlspecialchars($patient['first_name'] . ' ' . $patient['last_name']) ?>"
+                            data-priority="<?= htmlspecialchars($patient['priority']) ?>"
                             data-exam="<?= htmlspecialchars($patient['exam_type']) ?>"
                             data-date="<?= htmlspecialchars($patient['created_at']) ?>">
                             <td class="py-3 px-3 font-medium truncate max-w-[200px]"
@@ -143,7 +147,7 @@ $pendingPatients = $caseModel->getPendingCases($branchId);
                             <td class="py-3 px-3 whitespace-nowrap">
                                 <div class="flex items-center gap-2">
                                     <a href="/<?= PROJECT_DIR ?>/index.php?role=radtech&page=patient-approval&action=approve&id=<?= $patient['id'] ?>"
-                                        onclick="return confirm('Approve this patient and move to Today\'s Queue?')"
+                                        onclick="confirmAction('Confirm Approval', 'Would you like to confirm approving this patient and moving them to Today\'s Queue?', this.href, 'Yes, Proceed', false, event)"
                                         class="text-sm font-medium text-green-600 hover:text-green-700 transition"
                                         title="Approve">
                                         <i data-lucide="circle-check-big"
@@ -156,7 +160,7 @@ $pendingPatients = $caseModel->getPendingCases($branchId);
                                             class="w-6 h-6 mr-1 bg-blue-100 px-1 py-1 rounded-md border border-blue-500"></i>
                                     </button>
                                     <a href="/<?= PROJECT_DIR ?>/index.php?role=radtech&page=patient-approval&action=reject&id=<?= $patient['id'] ?>"
-                                        onclick="return confirm('Are you sure you want to reject this patient registration?')"
+                                        onclick="confirmAction('Confirm Rejection', 'Would you like to confirm rejecting this patient registration?', this.href, 'Yes, Proceed', false, event)"
                                         class="text-sm font-medium text-red-600 hover:text-red-700 transition" title="Reject">
                                         <i data-lucide="circle-x"
                                             class="w-6 h-6 mr-1 bg-red-100 px-1 py-1 rounded-md border border-red-500"></i>

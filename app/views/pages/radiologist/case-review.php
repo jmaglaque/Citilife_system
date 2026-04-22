@@ -530,7 +530,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-clinical')?.addEventListener('click', () => {});
 
     // ── Submit ────────────────────────────────────────────────────────────────
-    document.getElementById('btn-submit-report')?.addEventListener('click', () => {
+    document.getElementById('btn-submit-report')?.addEventListener('click', (e) => {
         if (isCompleted) return;
 
         // Save current panel's values into store first
@@ -570,7 +570,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // All valid — submit
-        document.getElementById('report-form').submit();
+        confirmAction('Submit Report', 'Would you like to confirm finalizing and submitting this report?', () => {
+            document.getElementById('report-form').submit();
+        }, 'Yes, Submit', false, e);
     });
 
     // ── Image Viewer ──────────────────────────────────────────────────────────

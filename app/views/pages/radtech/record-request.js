@@ -91,7 +91,7 @@ function initRequestModal() {
         const branch = searchBranch.value;
 
         if (!pName || !branch) {
-            alert("Please enter a patient name and select a branch.");
+            toast("Please enter a patient name and select a branch.", "error");
             return;
         }
 
@@ -110,12 +110,12 @@ function initRequestModal() {
             if (data.success) {
                 renderResults(data.data, branch);
             } else {
-                alert("Search failed: " + (data.error || "Unknown error"));
+                errorAlert("Search Failed", data.error || "Unknown error");
             }
         } catch (e) {
             btnSearch.disabled = false;
             btnSearch.innerHTML = originalHTML;
-            alert("Connection error. Could not search records.");
+            errorAlert("Connection Error", "Could not search records. Please try again later.");
         }
     });
 

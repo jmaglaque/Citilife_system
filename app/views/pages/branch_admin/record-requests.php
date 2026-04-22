@@ -114,14 +114,15 @@
                                 <td class="px-4 py-3.5 text-center">
                                     <form method="POST" action="" class="flex items-center justify-center gap-2">
                                         <input type="hidden" name="request_id" value="<?= $req['id'] ?>">
-                                        <button type="submit" name="action" value="Approve"
+                                        <button type="button" name="action" value="Approve"
                                             class="p-1.5 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors"
+                                            onclick="confirmFormAction(this, 'Approve', 'Confirm Approval', 'Would you like to confirm approving this record request? This will allow the requesting branch to view this patient\'s records.', 'action', event)"
                                             title="Approve Request">
                                             <i data-lucide="check" class="w-4 h-4"></i>
                                         </button>
-                                        <button type="submit" name="action" value="Deny"
+                                        <button type="button" name="action" value="Deny"
                                             class="p-1.5 rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
-                                            onclick="return confirm('Are you sure you want to deny this record request?');"
+                                            onclick="confirmFormAction(this, 'Deny', 'Confirm Denial', 'Would you like to confirm denying this record request?')"
                                             title="Deny Request">
                                             <i data-lucide="x" class="w-4 h-4"></i>
                                         </button>

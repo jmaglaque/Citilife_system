@@ -293,6 +293,15 @@ $uuid = uniqid('es_');
                     }
 
                     renderChips(container);
+
+                    // Dispatch custom event for listeners (like Patient Details image limits)
+                    container.dispatchEvent(new CustomEvent('exam-ms:change', {
+                        detail: {
+                            value: hiddenInput.value,
+                            count: currentVals.length
+                        },
+                        bubbles: true
+                    }));
                     return;
                 }
 
@@ -317,6 +326,15 @@ $uuid = uniqid('es_');
 
                     renderChips(container);
                     container.querySelector('.exam-ms-input').focus();
+
+                    // Dispatch custom event for listeners
+                    container.dispatchEvent(new CustomEvent('exam-ms:change', {
+                        detail: {
+                            value: hiddenInput.value,
+                            count: currentVals.length
+                        },
+                        bubbles: true
+                    }));
                     return;
                 }
 
@@ -378,6 +396,15 @@ $uuid = uniqid('es_');
                             }
                             
                             renderChips(container);
+
+                            // Dispatch custom event for listeners
+                            container.dispatchEvent(new CustomEvent('exam-ms:change', {
+                                detail: {
+                                    value: hiddenInput.value,
+                                    count: currentVals.length
+                                },
+                                bubbles: true
+                            }));
                         }
                     }
                 }

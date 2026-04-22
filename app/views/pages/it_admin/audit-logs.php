@@ -19,24 +19,26 @@
 
     <!-- Filter Bar -->
     <div class="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
-        <form method="GET" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <form method="GET" class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-8 gap-4">
             <input type="hidden" name="page" value="audit-logs">
 
             <!-- Search -->
             <div class="lg:col-span-2">
+                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">Search</label>
                 <div class="relative group">
                     <i data-lucide="search"
                         class="absolute left-3 top-2.5 w-4 h-4 text-gray-400 group-focus-within:text-indigo-500 transition-colors"></i>
-                    <input type="text" name="search" value="<?= htmlspecialchars($filters['search']) ?>"
-                        placeholder="Search action, user, or details..."
-                        class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all">
+                    <input type="text" name="search" id="filter-search" value="<?= htmlspecialchars($filters['search']) ?>"
+                        placeholder="Action, user, or details..."
+                        class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none">
                 </div>
             </div>
 
             <!-- Role Filter -->
             <div>
-                <select name="role"
-                    class="w-full px-4 py-2 border border-gray-200 rounded-xl text-xs font-bold uppercase tracking-widest focus:border-indigo-500">
+                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">Role</label>
+                <select name="role" id="filter-role"
+                    class="w-full px-4 py-2 border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest focus:border-indigo-500 outline-none cursor-pointer">
                     <option value="">All Roles</option>
                     <?php foreach ($distinctRoles as $roleOption): ?>
                         <option value="<?= $roleOption ?>" <?= $filters['role'] == $roleOption ? 'selected' : '' ?>>
@@ -46,29 +48,51 @@
                 </select>
             </div>
 
+            <!-- Module Filter -->
+            <div>
+                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">Category</label>
+                <select name="module" id="filter-module"
+                    class="w-full px-4 py-2 border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest focus:border-indigo-500 outline-none cursor-pointer">
+                    <option value="">All Categories</option>
+                    <?php foreach ($distinctModules as $modOption): ?>
+                        <option value="<?= $modOption ?>" <?= $filters['module'] == $modOption ? 'selected' : '' ?>>
+                            <?= strtoupper($modOption) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
             <!-- Start Date -->
             <div>
-                <input type="date" name="start_date" value="<?= htmlspecialchars($filters['start_date']) ?>"
-                    class="w-full px-4 py-2 border border-gray-200 rounded-xl text-xs focus:border-indigo-500">
+                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">From Date</label>
+                <input type="date" name="start_date" id="filter-start" value="<?= htmlspecialchars($filters['start_date']) ?>"
+                    class="w-full px-4 py-2 border border-gray-200 rounded-xl text-xs focus:border-indigo-500 outline-none">
             </div>
 
             <!-- End Date -->
             <div>
-                <input type="date" name="end_date" value="<?= htmlspecialchars($filters['end_date']) ?>"
-                    class="w-full px-4 py-2 border border-gray-200 rounded-xl text-xs focus:border-indigo-500">
+                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">To Date</label>
+                <input type="date" name="end_date" id="filter-end" value="<?= htmlspecialchars($filters['end_date']) ?>"
+                    class="w-full px-4 py-2 border border-gray-200 rounded-xl text-xs focus:border-indigo-500 outline-none">
             </div>
 
-            <!-- Submit -->
-            <div class="flex gap-2">
-                <button type="submit"
-                    class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-2 flex items-center justify-center gap-2 transition shadow-sm">
-                    <i data-lucide="filter" class="w-4 h-4"></i>
-                    <span class="text-xs font-bold uppercase tracking-widest leading-none">Filter</span>
-                </button>
+            <!-- Sort Order -->
+            <div>
+                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">Order</label>
+                <select name="sort" id="filter-sort"
+                    class="w-full px-4 py-2 border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest focus:border-indigo-500 outline-none cursor-pointer">
+                    <option value="desc" <?= $filters['sort'] == 'desc' ? 'selected' : '' ?>>Newest First</option>
+                    <option value="asc" <?= $filters['sort'] == 'asc' ? 'selected' : '' ?>>Oldest First</option>
+                </select>
+            </div>
+
+            <!-- Reset -->
+            <div class="flex items-end">
                 <a href="?page=audit-logs"
-                    class="p-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition"
+                    class="w-full py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition flex items-center justify-center gap-2 group"
                     title="Reset Filters">
-                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                    <i data-lucide="refresh-cw" class="w-4 h-4 group-hover:rotate-180 transition-transform duration-500"></i>
+                    <span class="text-[10px] font-black uppercase tracking-widest lg:hidden xl:inline">Reset</span>
                 </a>
             </div>
         </form>
@@ -92,7 +116,7 @@
                             Info</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-50">
+                <tbody id="audit-logs-body" class="divide-y divide-gray-50">
                     <?php if (empty($logs)): ?>
                         <tr>
                             <td colspan="6" class="px-6 py-24 text-center">
@@ -223,6 +247,112 @@
         modal.classList.add('hidden');
         modal.classList.remove('flex');
     }
+
+    // --- AJAX and Automatic Filtering ---
+    let filterTimeout;
+    const filterForm = document.querySelector('form');
+    const tableBody = document.getElementById('audit-logs-body');
+    const paginationContainer = document.querySelector('.bg-gray-50.border-t');
+
+    function applyFilters(isAutoPoll = false) {
+        const formData = new FormData(filterForm);
+        const params = new URLSearchParams(formData);
+        
+        // Don't show loading pulse for auto-polling to make it seamless
+        if (!isAutoPoll) tableBody.classList.add('opacity-50');
+        
+        fetch(`index.php?${params.toString()}`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            const newBody = doc.getElementById('audit-logs-body');
+            if (newBody) {
+                // Only update if content actually changed (to prevent flickering)
+                if (newBody.innerHTML !== tableBody.innerHTML) {
+                    tableBody.innerHTML = newBody.innerHTML;
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                }
+            }
+            
+            const newPagination = doc.querySelector('.bg-gray-50.border-t');
+            if (paginationContainer && newPagination) {
+                if (newPagination.innerHTML !== paginationContainer.innerHTML) {
+                    paginationContainer.innerHTML = newPagination.innerHTML;
+                }
+            }
+            
+            if (!isAutoPoll) tableBody.classList.remove('opacity-50');
+        })
+        .catch(err => {
+            console.error('Filter error:', err);
+            if (!isAutoPoll) tableBody.classList.remove('opacity-50');
+        });
+    }
+
+    // Real-time Polling (Every 5 seconds)
+    const pollInterval = setInterval(() => {
+        // Only poll if on page 1 (no 'p' param or p=1)
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentPage = urlParams.get('p') || '1';
+        
+        // Also don't poll if user is currently typing in search
+        const isTyping = document.activeElement === document.getElementById('filter-search');
+        
+        if (currentPage === '1' && !isTyping) {
+            applyFilters(true);
+        }
+    }, 5000);
+
+    // Add listeners to all form fields
+    filterForm.querySelectorAll('input, select').forEach(el => {
+        el.addEventListener('input', () => {
+            clearTimeout(filterTimeout);
+            filterTimeout = setTimeout(applyFilters, 300);
+        });
+        el.addEventListener('change', () => {
+            clearTimeout(filterTimeout);
+            applyFilters();
+        });
+    });
+
+    filterForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        applyFilters();
+    });
+
+    // Handle pagination via AJAX
+    document.addEventListener('click', (e) => {
+        const pageLink = e.target.closest('.flex.gap-2 a');
+        if (pageLink && pageLink.href.includes('page=audit-logs')) {
+            e.preventDefault();
+            const url = new URL(pageLink.href);
+            const params = url.searchParams;
+            
+            // Update URL in browser for reference
+            window.history.pushState({}, '', `index.php?${params.toString()}`);
+            
+            tableBody.classList.add('opacity-50');
+            fetch(`index.php?${params.toString()}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newBody = doc.getElementById('audit-logs-body');
+                if (newBody) tableBody.innerHTML = newBody.innerHTML;
+                const newPagination = doc.querySelector('.bg-gray-50.border-t');
+                if (paginationContainer && newPagination) paginationContainer.innerHTML = newPagination.innerHTML;
+                tableBody.classList.remove('opacity-50');
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+                tableBody.closest('.bg-white').scrollIntoView({ behavior: 'smooth' });
+            });
+        }
+    });
 
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();

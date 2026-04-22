@@ -153,10 +153,21 @@ if (isset($caseNotFound) && $caseNotFound) {
         </div>
 
         <div id="no-image-error" style="display:none;"
-            class="mb-3 rounded-lg bg-red-50 border border-red-300 p-3 flex items-center gap-2">
-            <i data-lucide="image-off" class="w-4 h-4 text-red-600 shrink-0"></i>
-            <p class="text-sm text-red-700 font-medium">Please upload at least one diagnostic image before submitting.
-            </p>
+            class="mb-3 rounded-lg bg-red-50 border border-red-300 p-3 flex items-center gap-3">
+            <i data-lucide="image-off" class="w-5 h-5 text-red-600 shrink-0"></i>
+            <p class="text-sm text-red-700 font-medium">Please upload at least one diagnostic image before submitting.</p>
+        </div>
+
+        <div id="exam-required-error" style="display:none;"
+            class="mb-3 rounded-lg bg-amber-50 border border-amber-300 p-3 flex items-center gap-3">
+            <i data-lucide="alert-circle" class="w-5 h-5 text-amber-600 shrink-0"></i>
+            <p class="text-sm text-amber-700 font-medium">Please select Examination Types above before uploading images.</p>
+        </div>
+
+        <div id="limit-error" style="display:none;"
+            class="mb-3 rounded-lg bg-orange-50 border border-orange-300 p-3 flex items-center gap-3">
+            <i data-lucide="info" class="w-5 h-5 text-orange-600 shrink-0"></i>
+            <p id="limit-error-msg" class="text-sm text-orange-700 font-medium">You can only upload as many images as there are selected exams.</p>
         </div>
 
         <?php if (!$isReadOnly): ?>
@@ -228,7 +239,8 @@ if (isset($caseNotFound) && $caseNotFound) {
         <?php $isReportReady = in_array($caseDetails['status'], ['Report Ready', 'Completed']); ?>
         <div class="mt-8 flex gap-4">
             <?php if (!$isReadOnly): ?>
-                <button type="submit" name="submit_radiologist"
+                <button type="button" 
+                    onclick="confirmFormAction(this, '1', 'Confirm Submission', 'Would you like to confirm submitting this case to the Radiologist?', 'submit_radiologist', event)"
                     class="inline-flex items-center gap-2 rounded-lg bg-red-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition shadow-sm">
                     <i data-lucide="send" class="w-4 h-4"></i>
                     Submit to Radiologist
@@ -242,7 +254,8 @@ if (isset($caseNotFound) && $caseNotFound) {
             <?php endif; ?>
 
             <?php if ($isReportReady): ?>
-                <a href="/<?= PROJECT_DIR ?>/app/views/pages/radtech/print-report.php?id=<?= $caseId ?>" target="_blank"
+                <a href="javascript:void(0)" 
+                    onclick="confirmAction('Confirm Print', 'Would you like to confirm printing this report?', '/<?= PROJECT_DIR ?>/app/views/pages/radtech/print-report.php?id=<?= $caseId ?>', 'Yes, Print', true, event)"
                     class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition shadow-sm">
                     <i data-lucide="printer" class="w-4 h-4"></i>
                     Print Result
@@ -272,18 +285,41 @@ if (isset($caseNotFound) && $caseNotFound) {
             var counter = document.getElementById('file-counter');
             var errSize = document.getElementById('file-size-error');
             var errSizeMsg = document.getElementById('file-size-error-msg');
-            var errLimit = document.getElementById('file-limit-error');
+            var errLimit = document.getElementById('limit-error');
+            var errLimitMsg = document.getElementById('limit-error-msg');
+            var errExamReq = document.getElementById('exam-required-error');
             var errNoImg = document.getElementById('no-image-error');
+            var examHidden = document.querySelector('.exam-ms-hidden-input');
+            var examContainer = document.querySelector('.exam-ms-component');
 
             if (!input || !dropZone) return;
 
             function formatMB(bytes) { return (bytes / (1024 * 1024)).toFixed(2) + ' MB'; }
 
             function updateCounter() {
-                if (counter) counter.textContent = fileQueue.length + (fileQueue.length === 1 ? ' file' : ' files');
-                counter.style.color = '#6b7280';
-                counter.style.borderColor = '#e5e7eb';
-                counter.style.background = '#f3f4f6';
+                var count = getExamCount();
+                if (counter) {
+                    if (count > 0) {
+                        counter.textContent = fileQueue.length + ' of ' + count + (count === 1 ? ' image' : ' images');
+                        if (fileQueue.length === count) {
+                            counter.style.color = '#059669'; // amber/green
+                            counter.style.background = '#ecfdf5';
+                            counter.style.borderColor = '#6ee7b7';
+                        } else {
+                            counter.style.color = '#6b7280';
+                            counter.style.background = '#f3f4f6';
+                            counter.style.borderColor = '#e5e7eb';
+                        }
+                    } else {
+                        counter.textContent = '0 images';
+                    }
+                }
+            }
+
+            function getExamCount() {
+                if (!examHidden) return 0;
+                var val = examHidden.value.trim();
+                return val ? val.split(',').filter(s => s.trim()).length : 0;
             }
 
             function renderPreviews() {
@@ -376,10 +412,26 @@ if (isset($caseNotFound) && $caseNotFound) {
 
             function addFiles(newFiles) {
                 if (errSize) errSize.style.display = 'none';
+                if (errLimit) errLimit.style.display = 'none';
                 
-                var allowedExts = ['jpg', 'jpeg', 'png', 'dcm', 'dicom'];
+                var examCount = getExamCount();
+                if (examCount === 0) {
+                    if (errExamReq) errExamReq.style.display = 'flex';
+                    examContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
 
-                Array.from(newFiles).forEach(function (file) {
+                var allowedExts = ['jpg', 'jpeg', 'png', 'dcm', 'dicom'];
+                var incomingFiles = Array.from(newFiles);
+
+                // Check overall limit
+                if (fileQueue.length + incomingFiles.length > examCount) {
+                    if (errLimitMsg) errLimitMsg.textContent = 'You can only upload ' + examCount + ' images for the ' + examCount + ' selected exams.';
+                    if (errLimit) errLimit.style.display = 'flex';
+                    return;
+                }
+
+                incomingFiles.forEach(function (file) {
                     if (file.size > MAX_BYTES) {
                         if (errSizeMsg) errSizeMsg.textContent = '"' + file.name + '" exceeds the 15 MB maximum size.';
                         if (errSize) errSize.style.display = 'flex';
@@ -408,6 +460,21 @@ if (isset($caseNotFound) && $caseNotFound) {
                 form.addEventListener('submit', function (e) {
                     // Sync fileQueue → native input RIGHT before PHP receives the form
                     syncInputFiles();
+                    var examCount = getExamCount();
+                    
+                    if (examCount === 0) {
+                        e.preventDefault();
+                        if (errExamReq) { errExamReq.style.display = 'flex'; errExamReq.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+                        return;
+                    }
+
+                    if (fileQueue.length !== examCount) {
+                        e.preventDefault();
+                        if (errLimitMsg) errLimitMsg.textContent = 'Mismatch: You have ' + fileQueue.length + ' images but ' + examCount + ' exams selected. Please match the counts.';
+                        if (errLimit) { errLimit.style.display = 'flex'; errLimit.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+                        return;
+                    }
+
                     if (fileQueue.length === 0) {
                         e.preventDefault();
                         if (errNoImg) { errNoImg.style.display = 'flex'; errNoImg.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
@@ -415,6 +482,7 @@ if (isset($caseNotFound) && $caseNotFound) {
                         setTimeout(function () { dropZone.classList.remove('border-red-500', 'bg-red-50'); }, 3000);
                     } else {
                         if (errNoImg) errNoImg.style.display = 'none';
+                        if (errLimit) errLimit.style.display = 'none';
                     }
                 });
             }
@@ -429,7 +497,29 @@ if (isset($caseNotFound) && $caseNotFound) {
                 if (e.dataTransfer && e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
             });
 
+            // Listen for exam changes
+            if (examContainer) {
+                examContainer.addEventListener('exam-ms:change', function(e) {
+                    var newCount = e.detail.count;
+                    if (newCount > 0 && errExamReq) errExamReq.style.display = 'none';
+                    
+                    // If exams reduced below current files, trim or warn
+                    if (fileQueue.length > newCount) {
+                        // For now we just warn and show the limit error
+                        if (errLimitMsg) errLimitMsg.textContent = 'Please remove excess images. You have ' + fileQueue.length + ' images but only ' + newCount + ' exams selected.';
+                        if (errLimit) errLimit.style.display = 'flex';
+                    } else if (errLimit) {
+                        errLimit.style.display = 'none';
+                    }
+                    
+                    updateCounter();
+                    renderPreviews();
+                });
+            }
+
+            // Sync on load
             updateCounter();
+            renderPreviews();
         });
     </script>
 <?php endif; ?>

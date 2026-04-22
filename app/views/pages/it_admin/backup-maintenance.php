@@ -66,8 +66,8 @@
                         current state.</p>
                 </div>
                 <form action="" method="POST" class="w-full">
-                    <input type="hidden" name="action" value="generate_backup">
-                    <button type="submit"
+                    <button type="button" 
+                        onclick="confirmFormAction(this, 'generate_backup', 'Confirm System Backup', 'Are you sure you want to initialize a new system backup? This will generate a full SQL snapshot of the current database.', 'action', event)"
                         class="w-full py-4 bg-white border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2">
                         <i data-lucide="play" class="w-3 h-3 fill-current text-current"></i>
                         Initialize Now
@@ -161,8 +161,9 @@
 </form>
 
 <script>
-    function confirmDelete(filename) {
-        if (confirm(`Are you absolutely sure you want to delete the backup: ${filename}? This cannot be undone.`)) {
+    async function confirmDelete(filename) {
+        const result = await confirmAlert('Confirm Deletion', `Would you like to confirm deleting the backup: ${filename}? This cannot be undone.`);
+        if (result.isConfirmed) {
             document.getElementById('delete-filename').value = filename;
             document.getElementById('delete-form').submit();
         }

@@ -617,13 +617,15 @@ if (!$isMultiExam) {
     <?php if (!$isPreview): ?>
         <!-- Print toolbar (hidden when printing) -->
         <div class="print-bar">
-            <button class="btn-print" onclick="window.print()"><i class="bi bi-printer" style="margin-right:7px;"></i>
-                Print</button>
-            <button class="btn-download" onclick="downloadPDF()"><i class="bi bi-file-earmark-pdf"
-                    style="margin-right:7px;"></i>
-                Save as PDF</button>
-            <button class="btn-close" onclick="window.close()"><i class="bi bi-x-lg" style="margin-right:5px;"></i>
-                Close</button>
+            <button class="btn-print" onclick="confirmAction('Confirm Print', 'Would you like to confirm printing this report?', () => window.print(), 'Yes, Print')">
+                <i class="bi bi-printer" style="margin-right:7px;"></i> Print
+            </button>
+            <button class="btn-download" onclick="confirmAction('Confirm Download', 'Would you like to save this report as PDF?', () => downloadPDF(), 'Yes, Save')">
+                <i class="bi bi-file-earmark-pdf" style="margin-right:7px;"></i> Save as PDF
+            </button>
+            <button class="btn-close" onclick="window.close()">
+                <i class="bi bi-x-lg" style="margin-right:5px;"></i> Close
+            </button>
         </div>
     <?php endif; ?>
 

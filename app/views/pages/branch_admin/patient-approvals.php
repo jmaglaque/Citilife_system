@@ -147,28 +147,29 @@
                                     <form method="POST" action="" class="flex items-center justify-center gap-2">
                                         <input type="hidden" name="user_id" value="<?= $patient['user_id'] ?>">
                                         <?php if ($patient['queue_status'] === 'Pending'): ?>
-                                            <button type="submit" name="action" value="Approve"
+                                            <button type="button" name="action" value="Approve"
                                                 class="p-1.5 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors"
+                                                onclick="confirmFormAction(this, 'Approve', 'Confirm Approval', 'Would you like to confirm approving this patient registration? This will grant them access to the patient portal.', 'action', event)"
                                                 title="Approve Registration">
                                                 <i data-lucide="check" class="w-4 h-4"></i>
                                             </button>
-                                            <button type="submit" name="action" value="Reject"
+                                            <button type="button" name="action" value="Reject"
                                                 class="p-1.5 rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
-                                                onclick="return confirm('Are you sure you want to reject this patient registration?');"
+                                                onclick="confirmFormAction(this, 'Reject', 'Confirm Rejection', 'Would you like to confirm rejecting this patient registration?')"
                                                 title="Reject Registration">
                                                 <i data-lucide="x" class="w-4 h-4"></i>
                                             </button>
                                         <?php else: ?>
                                             <div class="flex items-center gap-2">
-                                                <button type="submit" name="action" value="Restore"
+                                                <button type="button" name="action" value="Restore"
                                                     class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors flex items-center gap-1"
-                                                    onclick="return confirm('Are you sure you want to restore this rejected registration to pending?');"
+                                                    onclick="confirmFormAction(this, 'Restore', 'Confirm Restore', 'Would you like to confirm restoring this rejected registration to pending?')"
                                                     title="Restore to Pending">
                                                     <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Undo Reject
                                                 </button>
-                                                <button type="submit" name="action" value="Delete"
+                                                <button type="button" name="action" value="Delete"
                                                     class="p-1.5 rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 transition-all shadow-sm"
-                                                    onclick="return confirm('PERMANENT DELETE: This will completely remove this registration and free up the email. This action cannot be undone. Are you sure?');"
+                                                    onclick="confirmFormAction(this, 'Delete', 'Confirm Permanent Deletion', 'PERMANENT DELETE: Would you like to confirm completely removing this registration? This action cannot be undone.')"
                                                     title="Permanently Delete Registration">
                                                     <i data-lucide="trash-2" class="w-4 h-4"></i>
                                                 </button>

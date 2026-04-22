@@ -108,6 +108,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Patient Registration - CitiLife System</title>
     <link rel="stylesheet" href="/<?= PROJECT_DIR ?>/tailwind/src/output.css">
+    <script src="/<?= PROJECT_DIR ?>/public/assets/vendor/sweetalert2/sweetalert2.all.min.js?v=<?= time() ?>"></script>
+    <script src="/<?= PROJECT_DIR ?>/public/assets/js/alerts.js?v=<?= time() ?>"></script>
     <style>
         .step {
             display: none;
@@ -768,7 +770,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 const pw = document.getElementById('m_password').value;
                 const cpw = document.getElementById('m_confirm_password').value;
                 if (pw !== cpw) {
-                    alert("Passwords do not match.");
+                    toast("Passwords do not match.", "error");
                     isValid = false;
                 }
             }

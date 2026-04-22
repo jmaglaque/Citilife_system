@@ -288,7 +288,7 @@
                     <!-- Hidden real submit button -->
                     <button type="submit" id="realSubmitBtn" class="hidden"></button>
                     <button type="button" id="btn-final-submit"
-                        onclick="document.getElementById('realSubmitBtn').click()"
+                        onclick="confirmAction('Submit Request', 'Would you like to confirm submitting this record request?', () => document.getElementById('realSubmitBtn').click(), 'Yes, Submit', false, event)"
                         class="px-6 py-2.5 rounded-lg bg-red-600 text-white text-sm font-bold hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition shadow-sm flex items-center gap-2">
                         <i data-lucide="send" class="w-4 h-4"></i> Submit Request
                     </button>

@@ -111,16 +111,18 @@ $records = $caseModel->getReleasedRecords($branchId);
                                     </a>
 
                                     <!-- Print -->
-                                    <a href="/<?= PROJECT_DIR ?>/app/views/pages/radtech/print-report.php?id=<?= $row['id'] ?>"
-                                        target="_blank" class="text-green-500 hover:text-green-700 transition"
+                                    <a href="javascript:void(0)" 
+                                        onclick="confirmAction('Confirm Print', 'Would you like to confirm printing this report?', '/<?= PROJECT_DIR ?>/app/views/pages/radtech/print-report.php?id=<?= $row['id'] ?>', 'Yes, Print', true, event)"
+                                        class="text-green-500 hover:text-green-700 transition"
                                         title="Print Report">
                                         <i data-lucide="printer"
                                             class="w-6 h-6 bg-green-100 px-1 py-1 rounded-md border border-green-500"></i>
                                     </a>
 
                                     <!-- Download PDF -->
-                                    <a href="/<?= PROJECT_DIR ?>/app/views/pages/radtech/print-report.php?id=<?= $row['id'] ?>&download=true"
-                                        target="_blank" class="text-red-500 hover:text-red-700 transition" title="Download PDF">
+                                    <a href="javascript:void(0)" 
+                                        onclick="confirmAction('Confirm Download', 'Would you like to save this report as PDF?', '/<?= PROJECT_DIR ?>/app/views/pages/radtech/print-report.php?id=<?= $row['id'] ?>&download=true', 'Yes, Download', true, event)"
+                                        class="text-red-500 hover:text-red-700 transition" title="Download PDF">
                                         <i data-lucide="download"
                                             class="w-6 h-6 bg-red-100 px-1 py-1 rounded-md border border-red-500"></i>
                                     </a>
