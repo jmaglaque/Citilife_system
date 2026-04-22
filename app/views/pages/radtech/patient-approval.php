@@ -22,7 +22,7 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
 
         if ($result['success']) {
             $successMsg = $result['message'];
-            
+
             // Log the action
             $caseData = $caseModel->getCaseById($id);
             $patientName = $caseData ? ($caseData['first_name'] . ' ' . $caseData['last_name']) : "Unknown";
@@ -72,14 +72,10 @@ $pendingPatients = $caseModel->getPendingCases($branchId);
 
 <!-- Navigation Tabs -->
 <div class="mt-6 border-b border-gray-200">
-    <nav class="flex gap-8">
+    <nav class="flex gap-3">
         <a href="/<?= PROJECT_DIR ?>/index.php?role=radtech&page=patient-lists"
             class="flex items-center gap-2 px-1 py-3 text-sm font-medium <?php echo ($_GET['page'] ?? 'patient-lists') === 'patient-lists' ? 'text-red-600 border-b-2 border-red-600 hover:text-red-700' : 'text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300'; ?>">
             Today's Queue
-        </a>
-        <a href="/<?= PROJECT_DIR ?>/index.php?role=radtech&page=report-ready"
-            class="flex items-center gap-2 px-1 py-3 text-sm font-medium <?php echo ($_GET['page'] ?? 'patient-lists') === 'report-ready' ? 'text-red-600 border-b-2 border-red-600 hover:text-red-700' : 'text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300'; ?>">
-            Report Ready
         </a>
         <a href="/<?= PROJECT_DIR ?>/index.php?role=radtech&page=patient-approval"
             class="flex items-center gap-2 px-1 py-3 text-sm font-medium <?php echo ($_GET['page'] ?? 'patient-lists') === 'patient-approval' ? 'text-red-500 border-b-2 border-red-600 hover:text-red-700' : 'text-gray-600 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300'; ?>">

@@ -5,17 +5,20 @@
  * Separation of concerns: This is the 'Backend' logic.
  */
 
-class CaseModel {
+class CaseModel
+{
     private $pdo;
 
-    public function __construct($pdo) {
+    public function __construct($pdo)
+    {
         $this->pdo = $pdo;
     }
 
     /**
      * Build date condition string for SQL based on filter type.
      */
-    public function buildDateCondition($filter, $selectedMonth = null, $selectedYear = null) {
+    public function buildDateCondition($filter, $selectedMonth = null, $selectedYear = null)
+    {
         $dateCondition = "DATE(created_at) = CURDATE()";
         $periodLabel = "Today";
 
@@ -42,7 +45,8 @@ class CaseModel {
     /**
      * Get dashboard stats (total, pending, priority, emergency, completed)
      */
-    public function getDashboardStats($branchId, $dateCondition) {
+    public function getDashboardStats($branchId, $dateCondition)
+    {
         // Total
         $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM cases WHERE $dateCondition AND branch_id = ?");
         $stmt->execute([$branchId]);
@@ -80,8 +84,10 @@ class CaseModel {
     /**
      * Get the name of the technologist who handled the case.
      */
-    public function getRadTechName($radtechId) {
-        if (!$radtechId) return null;
+    public function getRadTechName($radtechId)
+    {
+        if (!$radtechId)
+            return null;
         $stmt = $this->pdo->prepare("SELECT name, email FROM users WHERE id = ?");
         $stmt->execute([$radtechId]);
         $rt = $stmt->fetch();
@@ -94,7 +100,8 @@ class CaseModel {
     /**
      * Get statistics for the Radiologist Dashboard.
      */
-    public function getRadiologistStats($dateCondition) {
+    public function getRadiologistStats($dateCondition)
+    {
         // Total Pending (All Branches)
         $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM cases WHERE status IN ('Pending', 'Under Reading') AND image_status = 'Uploaded' AND $dateCondition");
         $stmt->execute();
@@ -114,7 +121,8 @@ class CaseModel {
     /**
      * Get branch priority breakdown for charts.
      */
-    public function getBranchPriorityStats($dateCondition) {
+    public function getBranchPriorityStats($dateCondition)
+    {
         $stmt = $this->pdo->prepare("SELECT branch_id, priority, COUNT(*) as count 
                                FROM cases 
                                WHERE status IN ('Pending', 'Under Reading') AND image_status = 'Uploaded' AND $dateCondition 
@@ -126,7 +134,8 @@ class CaseModel {
     /**
      * Save radiologist findings and update status.
      */
-    public function saveFinding($caseId, $radiologistId, $data) {
+    public function saveFinding($caseId, $radiologistId, $data)
+    {
         $stmt = $this->pdo->prepare("
             UPDATE cases
             SET clinical_information = ?,
@@ -139,10 +148,10 @@ class CaseModel {
             WHERE id = ?
         ");
         return $stmt->execute([
-            $data['clinical_information'], 
-            $data['findings'], 
-            $data['impression'], 
-            $radiologistId, 
+            $data['clinical_information'],
+            $data['findings'],
+            $data['impression'],
+            $radiologistId,
             $caseId
         ]);
     }
@@ -151,7 +160,8 @@ class CaseModel {
      * Unified logic for a radiologist submitting a report.
      * Handles data processing, DB updates, and notifies the RadTech and Patient.
      */
-    public function submitRadiologistReport($caseId, $radiologistId, $data, $notificationModel) {
+    public function submitRadiologistReport($caseId, $radiologistId, $data, $notificationModel)
+    {
         $examReportsArr = $data['exam_reports_arr'] ?? [];
         $clinicalInfo = $data['clinical_information'] ?? '';
 
@@ -159,13 +169,15 @@ class CaseModel {
         $allFindings = [];
         $allImpressions = [];
         foreach ($examReportsArr as $examKey => $eData) {
-            if (!empty($eData['findings'])) $allFindings[] = $eData['findings'];
-            if (!empty($eData['impression'])) $allImpressions[] = $eData['impression'];
+            if (!empty($eData['findings']))
+                $allFindings[] = $eData['findings'];
+            if (!empty($eData['impression']))
+                $allImpressions[] = $eData['impression'];
         }
 
         $flatFindings = implode("\n\n", $allFindings);
         $flatImpression = implode("\n\n", $allImpressions);
-        
+
         // If multiple exams, we store raw JSON in findings for the report generator
         $findingsStore = count($examReportsArr) > 1 ? json_encode($examReportsArr) : ($flatFindings ?: '');
         $impressionStore = count($examReportsArr) > 1 ? '' : ($flatImpression ?: '');
@@ -181,14 +193,14 @@ class CaseModel {
             if ($cData && !empty($cData['branch_id'])) {
                 // Determine branch name/code for the message
                 $branchLabel = str_replace(' Branch', '', $cData['branch_name']);
-                
+
                 // Notify RadTech
                 $notificationModel->add(
-                    "Report Ready", 
-                    "Radiology report ready for Case {$cData['case_number']} ({$branchLabel}). Awaiting release.", 
-                    "/" . PROJECT_DIR . "/index.php?role=radtech&page=patient-details&id={$caseId}", 
-                    null, 
-                    'radtech', 
+                    "Report Ready",
+                    "Radiology report ready for Case {$cData['case_number']} ({$branchLabel}). Awaiting release.",
+                    "/" . PROJECT_DIR . "/index.php?role=radtech&page=patient-details&id={$caseId}",
+                    null,
+                    'radtech',
                     $cData['branch_id']
                 );
 
@@ -196,9 +208,9 @@ class CaseModel {
                 $patientUserId = $this->getPatientUserId($caseId);
                 if ($patientUserId) {
                     $notificationModel->add(
-                        "Reading Completed", 
-                        "Your X-ray for Case {$cData['case_number']} has been read. It will be released shortly.", 
-                        "/" . PROJECT_DIR . "/index.php?role=patient&page=xray-status&case_id={$caseId}", 
+                        "Reading Completed",
+                        "Your X-ray for Case {$cData['case_number']} has been read. It will be released shortly.",
+                        "/" . PROJECT_DIR . "/index.php?role=patient&page=xray-status&case_id={$caseId}",
                         $patientUserId,
                         'patient'
                     );
@@ -218,7 +230,8 @@ class CaseModel {
     /**
      * Update case status.
      */
-    public function updateStatus($caseId, $status) {
+    public function updateStatus($caseId, $status)
+    {
         $stmt = $this->pdo->prepare("UPDATE cases SET status = ? WHERE id = ?");
         return $stmt->execute([$status, $caseId]);
     }
@@ -226,17 +239,18 @@ class CaseModel {
     /**
      * Get latest 5 cases for the dashboard table
      */
-    public function getRecentCases($branchId, $dateCondition, $limit = 5) {
+    public function getRecentCases($branchId, $dateCondition, $limit = 5)
+    {
         // We need to adjust 'created_at' in the condition if we're using joins with aliases
         $recentDateCondition = str_replace('created_at', 'c.created_at', $dateCondition);
-        
+
         $sql = "SELECT c.*, p.first_name, p.last_name, p.patient_number 
                 FROM cases c 
                 JOIN patients p ON c.patient_id = p.id 
                 WHERE c.branch_id = ? AND $recentDateCondition 
                 ORDER BY c.created_at DESC 
-                LIMIT " . (int)$limit;
-                
+                LIMIT " . (int) $limit;
+
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$branchId]);
         return $stmt->fetchAll();
@@ -245,7 +259,8 @@ class CaseModel {
     /**
      * Get case by ID with patient and branch details.
      */
-    public function getCaseById($id) {
+    public function getCaseById($id)
+    {
         $stmt = $this->pdo->prepare("
             SELECT c.*, p.first_name, p.last_name, p.age, p.sex, p.contact_number, p.patient_number,
                    b.name AS branch_name,
@@ -265,7 +280,8 @@ class CaseModel {
     /**
      * Register a new case.
      */
-    public function registerCase($data) {
+    public function registerCase($data)
+    {
         $caseNumber = $this->generateCaseNumber($data['branch_id'] ?? null);
         $hasApprovalStatus = $this->hasColumn('cases', 'approval_status');
         $approvalStatus = $data['approval_status'] ?? 'Pending';
@@ -273,28 +289,28 @@ class CaseModel {
         if ($hasApprovalStatus) {
             $stmt = $this->pdo->prepare("INSERT INTO cases (case_number, patient_id, branch_id, exam_type, priority, philhealth_status, philhealth_id, status, approval_status) VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending', ?)");
             $stmt->execute([
-                $caseNumber, 
-                $data['patient_id'], 
-                $data['branch_id'], 
-                $data['exam_type'] ?? 'To be determined', 
-                $data['priority'] ?? 'Routine', 
-                $data['philhealth_status'] ?? 'Without PhilHealth Card', 
+                $caseNumber,
+                $data['patient_id'],
+                $data['branch_id'],
+                $data['exam_type'] ?? 'To be determined',
+                $data['priority'] ?? 'Routine',
+                $data['philhealth_status'] ?? 'Without PhilHealth Card',
                 $data['philhealth_id'] ?? null,
                 $approvalStatus
             ]);
         } else {
             $stmt = $this->pdo->prepare("INSERT INTO cases (case_number, patient_id, branch_id, exam_type, priority, philhealth_status, philhealth_id, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending')");
             $stmt->execute([
-                $caseNumber, 
-                $data['patient_id'], 
-                $data['branch_id'], 
-                $data['exam_type'] ?? 'To be determined', 
-                $data['priority'] ?? 'Routine', 
-                $data['philhealth_status'] ?? 'Without PhilHealth Card', 
+                $caseNumber,
+                $data['patient_id'],
+                $data['branch_id'],
+                $data['exam_type'] ?? 'To be determined',
+                $data['priority'] ?? 'Routine',
+                $data['philhealth_status'] ?? 'Without PhilHealth Card',
                 $data['philhealth_id'] ?? null
             ]);
         }
-        
+
         $newCaseId = $this->pdo->lastInsertId();
         return ['id' => $newCaseId, 'case_number' => $caseNumber];
     }
@@ -302,7 +318,8 @@ class CaseModel {
     /**
      * Get the latest case for a patient.
      */
-    public function getLatestCaseByPatient($patientId) {
+    public function getLatestCaseByPatient($patientId)
+    {
         $stmt = $this->pdo->prepare("
             SELECT c.*, b.name AS branch_name
             FROM cases c
@@ -318,7 +335,8 @@ class CaseModel {
     /**
      * Get patient's case history across all branches.
      */
-    public function getPatientHistory($patientNumber, $excludeCaseId = null) {
+    public function getPatientHistory($patientNumber, $excludeCaseId = null)
+    {
         $sql = "SELECT c.*, b.name as branch_name
                 FROM cases c
                 JOIN branches b ON c.branch_id = b.id
@@ -340,7 +358,8 @@ class CaseModel {
     /**
      * Get worklist for radiologists.
      */
-    public function getWorklist($branchId = null, $priority = null, $status = null, $imageUploadedOnly = false) {
+    public function getWorklist($branchId = null, $priority = null, $status = null, $imageUploadedOnly = false)
+    {
         $sql = "SELECT c.*, p.first_name, p.last_name, p.patient_number, b.name as branch_name 
                 FROM cases c 
                 JOIN patients p ON c.patient_id = p.id 
@@ -360,7 +379,8 @@ class CaseModel {
             if (is_array($status)) {
                 $placeholders = implode(',', array_fill(0, count($status), '?'));
                 $sql .= " AND c.status IN ($placeholders)";
-                foreach ($status as $s) $params[] = $s;
+                foreach ($status as $s)
+                    $params[] = $s;
             } else {
                 $sql .= " AND c.status = ?";
                 $params[] = $status;
@@ -371,7 +391,7 @@ class CaseModel {
         }
 
         $sql .= " ORDER BY CASE WHEN c.priority = 'Emergency' THEN 1 ELSE 2 END, c.created_at DESC";
-        
+
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll();
@@ -380,24 +400,28 @@ class CaseModel {
     /**
      * Generate a unique case number.
      */
-    public function generateCaseNumber($branchId = null) {
+    public function generateCaseNumber($branchId = null)
+    {
         $branchCode = 'GEN';
         if ($branchId) {
             $stmtB = $this->pdo->prepare("SELECT name FROM branches WHERE id = ?");
             $stmtB->execute([$branchId]);
             $branchName = $stmtB->fetchColumn() ?: 'General';
-            
+
             $cleanName = str_replace(' Branch', '', $branchName);
             $branchCode = strtoupper(substr($cleanName, 0, 3));
-            
-            if (strpos($branchName, 'San Antonio') !== false) $branchCode = 'SAN';
-            if (strpos($branchName, 'Sto Domingo') !== false) $branchCode = 'STO';
-            if (strpos($branchName, 'General Tinio') !== false) $branchCode = 'GEN';
+
+            if (strpos($branchName, 'San Antonio') !== false)
+                $branchCode = 'SAN';
+            if (strpos($branchName, 'Sto Domingo') !== false)
+                $branchCode = 'STO';
+            if (strpos($branchName, 'General Tinio') !== false)
+                $branchCode = 'GEN';
         }
 
         $year = date('Y');
         $prefix = "CX-{$year}-"; // System standard uses CX-YYYY-XXXX
-        
+
         $stmtLast = $this->pdo->prepare("SELECT case_number FROM cases WHERE case_number LIKE ? ORDER BY id DESC LIMIT 1");
         $stmtLast->execute(["CX-{$year}-%"]);
         $lastCase = $stmtLast->fetchColumn();
@@ -413,7 +437,8 @@ class CaseModel {
     /**
      * Helper to check if a column exists in a table.
      */
-    private function hasColumn($table, $column) {
+    private function hasColumn($table, $column)
+    {
         $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?");
         $stmt->execute([$table, $column]);
         return (bool) $stmt->fetchColumn();
@@ -422,7 +447,8 @@ class CaseModel {
     /**
      * Release result and move to completed.
      */
-    public function releaseResult($caseId) {
+    public function releaseResult($caseId)
+    {
         $stmt = $this->pdo->prepare("UPDATE cases SET status = 'Completed', released = 1 WHERE id = ?");
         return $stmt->execute([$caseId]);
     }
@@ -430,8 +456,10 @@ class CaseModel {
     /**
      * Get patient linked to a user ID.
      */
-    public function getLinkedPatient($userId) {
-        if (!$userId) return null;
+    public function getLinkedPatient($userId)
+    {
+        if (!$userId)
+            return null;
         $stmt = $this->pdo->prepare("
             SELECT p.*, b.name as branch_name 
             FROM patients p 
@@ -446,7 +474,8 @@ class CaseModel {
     /**
      * Get patient by user ID (legacy simple version).
      */
-    public function getPatientByUserId($userId) {
+    public function getPatientByUserId($userId)
+    {
         $stmt = $this->pdo->prepare("SELECT p.* FROM patients p JOIN users u ON u.patient_id = p.id WHERE u.id = ?");
         $stmt->execute([$userId]);
         return $stmt->fetch();
@@ -455,7 +484,8 @@ class CaseModel {
     /**
      * Get associated User ID for a case (for notifications).
      */
-    public function getPatientUserId($caseId) {
+    public function getPatientUserId($caseId)
+    {
         $stmt = $this->pdo->prepare("SELECT u.id FROM users u JOIN cases c ON c.patient_id = u.patient_id WHERE c.id = ? LIMIT 1");
         $stmt->execute([$caseId]);
         return $stmt->fetchColumn();
@@ -464,9 +494,10 @@ class CaseModel {
     /**
      * Get released or completed records for a branch.
      */
-    public function getReleasedRecords($branchId) {
+    public function getReleasedRecords($branchId)
+    {
         $hasReleased = $this->hasColumn('cases', 'released');
-        
+
         if ($hasReleased) {
             $sql = "SELECT c.*, p.first_name, p.last_name, p.patient_number 
                     FROM cases c 
@@ -489,7 +520,8 @@ class CaseModel {
     /**
      * Get case details by case number (CX-YYYY-XXXX).
      */
-    public function getCaseByNumber($caseNumber) {
+    public function getCaseByNumber($caseNumber)
+    {
         $stmt = $this->pdo->prepare("
             SELECT c.*, p.first_name, p.last_name, p.age, p.sex, p.contact_number, p.patient_number as p_num
             FROM cases c
@@ -503,7 +535,8 @@ class CaseModel {
     /**
      * Approve a pending case.
      */
-    public function approveCase($id) {
+    public function approveCase($id)
+    {
         $stmt = $this->pdo->prepare("UPDATE cases SET approval_status = 'Approved', status = 'Pending' WHERE id = ? AND approval_status = 'Pending'");
         $stmt->execute([$id]);
         return $stmt->rowCount() > 0;
@@ -512,7 +545,8 @@ class CaseModel {
     /**
      * Search for cases in a specific branch by case number or name.
      */
-    public function searchCasesInBranch($branchId, $caseNumber, $patientName = '', $examType = '') {
+    public function searchCasesInBranch($branchId, $caseNumber, $patientName = '', $examType = '')
+    {
         // Search by case number first
         $stmt = $this->pdo->prepare("
             SELECT c.*, p.first_name, p.last_name, p.patient_number 
@@ -547,7 +581,8 @@ class CaseModel {
     /**
      * Reject a pending case.
      */
-    public function rejectCase($id) {
+    public function rejectCase($id)
+    {
         $stmt = $this->pdo->prepare("UPDATE cases SET approval_status = 'Rejected', status = 'Rejected' WHERE id = ? AND approval_status = 'Pending'");
         $stmt->execute([$id]);
         return $stmt->rowCount() > 0;
@@ -556,7 +591,8 @@ class CaseModel {
     /**
      * Update Case PhilHealth info.
      */
-    public function updateCasePhilHealth($id, $status, $philhealthId) {
+    public function updateCasePhilHealth($id, $status, $philhealthId)
+    {
         $philhealthIdToSave = ($status === 'With PhilHealth Card') ? $philhealthId : null;
         $stmt = $this->pdo->prepare("UPDATE cases SET philhealth_status = ?, philhealth_id = ? WHERE id = ?");
         return $stmt->execute([$status, $philhealthIdToSave, $id]);
@@ -565,7 +601,8 @@ class CaseModel {
     /**
      * Get pending cases for approval.
      */
-    public function getPendingCases($branchId) {
+    public function getPendingCases($branchId)
+    {
         $hasApprovalStatus = $this->hasColumn('cases', 'approval_status');
         if ($hasApprovalStatus) {
             $sql = "SELECT c.*, p.first_name, p.last_name, p.age, p.sex, p.contact_number 
@@ -588,7 +625,8 @@ class CaseModel {
     /**
      * Submit a case to a radiologist with images and template.
      */
-    public function submitToRadiologist($caseId, $data) {
+    public function submitToRadiologist($caseId, $data)
+    {
         $sql = "UPDATE cases SET 
                 exam_type = ?, 
                 priority = ?, 
@@ -619,26 +657,32 @@ class CaseModel {
      * Complete logic for RadTech submitting images to a radiologist.
      * Handles file uploads, DB updates, and notifications.
      */
-    public function processRadTechSubmission($caseId, $data, $notificationModel) {
+    public function processRadTechSubmission($caseId, $data, $notificationModel)
+    {
         // Validation
-        if (empty($data['exam_type'])) return ['success' => false, 'message' => "Please select at least one Exam Type."];
-        if (empty($data['report_template'])) return ['success' => false, 'message' => "Please select a Report Template before submitting."];
-        
+        if (empty($data['exam_type']))
+            return ['success' => false, 'message' => "Please select at least one Exam Type."];
+        if (empty($data['report_template']))
+            return ['success' => false, 'message' => "Please select a Report Template before submitting."];
+
         $files = $data['files'];
         $hasFiles = isset($files) && is_array($files['name']) && !empty(array_filter($files['name']));
-        if (!$hasFiles) return ['success' => false, 'message' => "Please upload at least one diagnostic image before submitting."];
+        if (!$hasFiles)
+            return ['success' => false, 'message' => "Please upload at least one diagnostic image before submitting."];
 
         // File Processing
         $uploadedPaths = [];
         $uploadDir = __DIR__ . '/../../public/assets/uploads/cases/';
-        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+        if (!is_dir($uploadDir))
+            mkdir($uploadDir, 0777, true);
 
         $count = count($files['name']);
         for ($i = 0; $i < $count; $i++) {
-            if ($files['error'][$i] !== UPLOAD_ERR_OK) continue;
+            if ($files['error'][$i] !== UPLOAD_ERR_OK)
+                continue;
             $fileName = $files['name'][$i];
             $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-            
+
             // Validate allowed extensions
             $allowedExts = ['jpg', 'jpeg', 'png', 'dcm', 'dicom'];
             if (!in_array($fileExt, $allowedExts)) {
@@ -646,7 +690,7 @@ class CaseModel {
             }
 
             $newFileName = 'case_' . $caseId . '_' . time() . '_' . $i . '.' . $fileExt;
-            
+
             if (move_uploaded_file($files['tmp_name'][$i], $uploadDir . $newFileName)) {
                 $uploadedPaths[] = 'public/assets/uploads/cases/' . $newFileName;
             } else {
@@ -662,16 +706,16 @@ class CaseModel {
             'image_path' => json_encode($uploadedPaths),
             'radtech_id' => $data['radtech_id'] ?? null
         ];
-        
+
         if ($this->submitToRadiologist($caseId, $submitData)) {
             // Notifications
             $cData = $this->getCaseById($caseId);
             if ($cData && !empty($cData['branch_id'])) {
                 $notificationModel->add(
-                    "New X-ray Uploaded", 
-                    "X-ray image uploaded for Case {$cData['case_number']} and is ready for reading.", 
-                    "/" . PROJECT_DIR . "/index.php?role=radiologist&page=patient-queue&branch_id={$cData['branch_id']}&highlight=" . urlencode($cData['case_number']), 
-                    null, 
+                    "New X-ray Uploaded",
+                    "X-ray image uploaded for Case {$cData['case_number']} and is ready for reading.",
+                    "/" . PROJECT_DIR . "/index.php?role=radiologist&page=patient-queue&branch_id={$cData['branch_id']}&highlight=" . urlencode($cData['case_number']),
+                    null,
                     'radiologist'
                 );
             }
@@ -685,17 +729,18 @@ class CaseModel {
      * Unified logic for a technologist approving or rejecting a case.
      * Handles status changes and patient notifications.
      */
-    public function processCaseApproval($id, $action, $notificationModel) {
+    public function processCaseApproval($id, $action, $notificationModel)
+    {
         if ($action === 'approve') {
             if ($this->approveCase($id)) {
                 $caseData = $this->getCaseById($id);
                 $patientUserId = $this->getPatientUserId($id);
-                
+
                 if ($patientUserId) {
                     $notificationModel->add(
-                        "Request Approved", 
-                        "Your X-ray request ({$caseData['case_number']}) has been approved. Please proceed to the X-ray room.", 
-                        "/" . PROJECT_DIR . "/index.php?role=patient&page=xray-status&case_id={$id}", 
+                        "Request Approved",
+                        "Your X-ray request ({$caseData['case_number']}) has been approved. Please proceed to the X-ray room.",
+                        "/" . PROJECT_DIR . "/index.php?role=patient&page=xray-status&case_id={$id}",
                         $patientUserId,
                         'patient'
                     );
@@ -708,9 +753,9 @@ class CaseModel {
                 $patientUserId = $this->getPatientUserId($id);
                 if ($patientUserId && $caseData) {
                     $notificationModel->add(
-                        "Request Rejected", 
-                        "Your X-ray request ({$caseData['case_number']}) has been rejected. Please contact the clinic for more info.", 
-                        "/" . PROJECT_DIR . "/index.php?role=patient&page=xray-status", 
+                        "Request Rejected",
+                        "Your X-ray request ({$caseData['case_number']}) has been rejected. Please contact the clinic for more info.",
+                        "/" . PROJECT_DIR . "/index.php?role=patient&page=xray-status",
                         $patientUserId,
                         'patient'
                     );
@@ -724,7 +769,8 @@ class CaseModel {
     /**
      * Get aggregated statistics for reports based on date range and branch selection.
      */
-    public function getReportStats($startDate, $endDate, $branchIds = []) {
+    public function getReportStats($startDate, $endDate, $branchIds = [])
+    {
         $sql = "SELECT b.id as branch_id,
                        b.name as branch_name,
                        COUNT(c.id) as total_patients,
@@ -736,17 +782,18 @@ class CaseModel {
                 FROM branches b
                 LEFT JOIN cases c ON c.branch_id = b.id AND DATE(c.created_at) BETWEEN ? AND ?
                 WHERE 1=1";
-        
+
         $params = [$startDate, $endDate];
 
         if (!empty($branchIds)) {
             $placeholders = implode(',', array_fill(0, count($branchIds), '?'));
             $sql .= " AND b.id IN ($placeholders)";
-            foreach ($branchIds as $id) $params[] = $id;
+            foreach ($branchIds as $id)
+                $params[] = $id;
         }
 
         $sql .= " GROUP BY b.id, b.name ORDER BY b.name ASC, b.id ASC";
-        
+
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll();
@@ -755,7 +802,8 @@ class CaseModel {
     /**
      * Get monthly patient counts for a branch in a given year.
      */
-    public function getBranchMonthlyStats($branchId, $year) {
+    public function getBranchMonthlyStats($branchId, $year)
+    {
         $sql = "SELECT MONTH(created_at) as month_num, COUNT(*) as count 
                 FROM cases 
                 WHERE branch_id = ? AND YEAR(created_at) = ? 
@@ -770,7 +818,8 @@ class CaseModel {
      * Get stats breakdown for a specific branch and date range.
      * More targeted than getReportStats which is branch-centric.
      */
-    public function getBranchBreakdown($branchId, $startDate, $endDate) {
+    public function getBranchBreakdown($branchId, $startDate, $endDate)
+    {
         $sql = "SELECT 
                     COUNT(*) as total_patients,
                     SUM(CASE WHEN philhealth_status = 'With PhilHealth Card' THEN 1 ELSE 0 END) as with_philhealth,
@@ -780,7 +829,7 @@ class CaseModel {
                     SUM(CASE WHEN priority IN ('Routine', 'Normal') THEN 1 ELSE 0 END) as routine_count
                 FROM cases
                 WHERE branch_id = ? AND DATE(created_at) BETWEEN ? AND ?";
-        
+
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$branchId, $startDate, $endDate]);
         return $stmt->fetch();
@@ -789,7 +838,8 @@ class CaseModel {
     /**
      * Ensure database schema is up to date (Backend migration logic).
      */
-    public function ensureSchema() {
+    public function ensureSchema()
+    {
         // Ensure approval_status exists
         if (!$this->hasColumn('cases', 'approval_status')) {
             $this->pdo->exec("ALTER TABLE cases ADD COLUMN approval_status ENUM('Pending','Approved','Rejected') NOT NULL DEFAULT 'Pending'");

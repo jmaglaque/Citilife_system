@@ -5,10 +5,10 @@
  */
 ?>
 <style>
-  html.theme-dark .priority-badge,
-  html.theme-dark .status-badge {
-    background-color: transparent !important;
-  }
+    html.theme-dark .priority-badge,
+    html.theme-dark .status-badge {
+        background-color: transparent !important;
+    }
 </style>
 
 
@@ -47,7 +47,7 @@
 
 <!-- Navigation Tabs -->
 <div class="mt-6 border-b border-gray-200">
-    <nav class="flex gap-8">
+    <nav class="flex gap-3">
         <a href="/<?= PROJECT_DIR ?>/index.php?role=radtech&page=patient-lists"
             class="flex items-center gap-2 px-1 py-3 text-sm font-medium <?= ($_GET['page'] ?? 'patient-lists') === 'patient-lists' ? 'text-red-600 border-b-2 border-red-600 hover:text-red-700' : 'text-gray-600 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300'; ?>">
             Today's Queue
@@ -141,12 +141,27 @@
                             </td>
                             <td class="py-3 px-3">
                                 <?php
-                                $pBorder = '1.5px solid #60a5fa'; $pBg = '#eff6ff'; $pColor = '#1d4ed8';
-                                if ($row['priority'] === 'Emergency') { $pBorder = '1.5px solid #f87171'; $pBg = '#fef2f2'; $pColor = '#b91c1c'; }
-                                if ($row['priority'] === 'Urgent')    { $pBorder = '1.5px solid #facc15'; $pBg = '#fefce8'; $pColor = '#a16207'; }
-                                if ($row['priority'] === 'Priority')  { $pBorder = '1.5px solid #fb923c'; $pBg = '#fff7ed'; $pColor = '#c2410c'; }
+                                $pBorder = '1.5px solid #60a5fa';
+                                $pBg = '#eff6ff';
+                                $pColor = '#1d4ed8';
+                                if ($row['priority'] === 'Emergency') {
+                                    $pBorder = '1.5px solid #f87171';
+                                    $pBg = '#fef2f2';
+                                    $pColor = '#b91c1c';
+                                }
+                                if ($row['priority'] === 'Urgent') {
+                                    $pBorder = '1.5px solid #facc15';
+                                    $pBg = '#fefce8';
+                                    $pColor = '#a16207';
+                                }
+                                if ($row['priority'] === 'Priority') {
+                                    $pBorder = '1.5px solid #fb923c';
+                                    $pBg = '#fff7ed';
+                                    $pColor = '#c2410c';
+                                }
                                 ?>
-                                <span class="priority-badge inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
+                                <span
+                                    class="priority-badge inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
                                     style="border:<?= $pBorder ?>;background-color:<?= $pBg ?>;color:<?= $pColor ?>">
                                     <?= htmlspecialchars($row['priority']) ?>
                                 </span>
@@ -163,13 +178,32 @@
                             <td class="py-3 px-3">
                                 <?php
                                 $displayStatus = ($row['approval_status'] === 'Rejected' || $row['status'] === 'Rejected') ? 'Rejected' : $row['status'];
-                                $sBorder = '1.5px solid #facc15'; $sBg = '#fefce8'; $sColor = '#a16207';
-                                if ($displayStatus === 'Report Ready')  { $sBorder = '1.5px solid #818cf8'; $sBg = '#eef2ff'; $sColor = '#4338ca'; }
-                                if ($displayStatus === 'Under Reading') { $sBorder = '1.5px solid #60a5fa'; $sBg = '#eff6ff'; $sColor = '#1d4ed8'; }
-                                if ($displayStatus === 'Completed')     { $sBorder = '1.5px solid #4ade80'; $sBg = '#f0fdf4'; $sColor = '#15803d'; }
-                                if ($displayStatus === 'Rejected')      { $sBorder = '1.5px solid #f87171'; $sBg = '#fef2f2'; $sColor = '#b91c1c'; }
+                                $sBorder = '1.5px solid #facc15';
+                                $sBg = '#fefce8';
+                                $sColor = '#a16207';
+                                if ($displayStatus === 'Report Ready') {
+                                    $sBorder = '1.5px solid #818cf8';
+                                    $sBg = '#eef2ff';
+                                    $sColor = '#4338ca';
+                                }
+                                if ($displayStatus === 'Under Reading') {
+                                    $sBorder = '1.5px solid #60a5fa';
+                                    $sBg = '#eff6ff';
+                                    $sColor = '#1d4ed8';
+                                }
+                                if ($displayStatus === 'Completed') {
+                                    $sBorder = '1.5px solid #4ade80';
+                                    $sBg = '#f0fdf4';
+                                    $sColor = '#15803d';
+                                }
+                                if ($displayStatus === 'Rejected') {
+                                    $sBorder = '1.5px solid #f87171';
+                                    $sBg = '#fef2f2';
+                                    $sColor = '#b91c1c';
+                                }
                                 ?>
-                                <span class="status-badge inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
+                                <span
+                                    class="status-badge inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
                                     style="border:<?= $sBorder ?>;background-color:<?= $sBg ?>;color:<?= $sColor ?>">
                                     <?= htmlspecialchars($displayStatus ?: 'Pending') ?>
                                 </span>
@@ -189,10 +223,9 @@
 
                                     <?php if ($isReportReady): ?>
                                         <!-- Print Result — active when Report Ready -->
-                                        <a href="javascript:void(0)" 
-                                            onclick="confirmAction('Confirm Print', 'Would you like to confirm printing this report?', '/<?= PROJECT_DIR ?>/app/views/pages/radtech/print-report.php?id=<?= $row['id'] ?>', 'Yes, Print', true, event)" 
-                                            class="text-green-500 hover:text-green-700 transition"
-                                            title="Print Report">
+                                        <a href="javascript:void(0)"
+                                            onclick="confirmAction('Confirm Print', 'Would you like to confirm printing this report?', '/<?= PROJECT_DIR ?>/app/views/pages/radtech/print-report.php?id=<?= $row['id'] ?>', 'Yes, Print', true, event)"
+                                            class="text-green-500 hover:text-green-700 transition" title="Print Report">
                                             <i data-lucide="printer"
                                                 class="w-6 h-6 mr-1 bg-green-100 px-1 py-1 rounded-md border border-green-500"></i>
                                         </a>
@@ -256,16 +289,16 @@
         // Sort
         if (sort === 'Newest Case' || sort === 'Oldest Case') {
             const priorityMap = { 'Emergency': 3, 'Urgent': 2, 'Routine': 1 };
-            
+
             rows.sort((a, b) => {
                 // Primary Sort: Priority Level (Emergency > Urgent > Routine)
                 const scoreA = priorityMap[a.dataset.priority] || 0;
                 const scoreB = priorityMap[b.dataset.priority] || 0;
-                
+
                 if (scoreA !== scoreB) {
                     return scoreB - scoreA;
                 }
-                
+
                 // Secondary Sort: Date
                 const dateA = new Date(a.dataset.date).getTime();
                 const dateB = new Date(b.dataset.date).getTime();
