@@ -100,6 +100,7 @@ try {
     href="/<?= PROJECT_DIR ?>/public/assets/vendor/sweetalert2/sweetalert2.min.css?v=<?= time() ?>">
   <script src="/<?= PROJECT_DIR ?>/public/assets/vendor/sweetalert2/sweetalert2.all.min.js?v=<?= time() ?>"></script>
   <script src="/<?= PROJECT_DIR ?>/public/assets/js/alerts.js?v=<?= time() ?>"></script>
+  <script src="/<?= PROJECT_DIR ?>/public/assets/js/security.js?v=<?= time() ?>"></script>
 
   <link rel="stylesheet" href="/<?= PROJECT_DIR ?>/tailwind/src/output.css">
   <style>

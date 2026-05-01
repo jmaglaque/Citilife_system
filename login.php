@@ -106,6 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_locked) {
     <title>Login - CitiLife System</title>
     <!-- Use generated Tailwind CSS -->
     <link rel="stylesheet" href="/<?= PROJECT_DIR ?>/tailwind/src/output.css">
+    <script src="/<?= PROJECT_DIR ?>/public/assets/js/security.js?v=<?= time() ?>"></script>
     <style>
         /* Custom styles for a more premium look */
         .glass-panel {
