@@ -66,10 +66,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // VALIDATION using filter_var();
     $isEmailValid = filter_var($email, FILTER_VALIDATE_EMAIL);
 
+    // VALIDATION for contact number
+    $contactPattern = "/^09\d{9}$/";
+    $isContactValid = preg_match($contactPattern, $contactNumber);
+
     if (empty($firstName) || empty($lastName) || empty($age) || empty($email) || empty($password) || empty($branchId)) {
         $error = 'Please fill out all required fields.';
     } elseif (!$isNameValid) {
         $error = 'Invalid Name. Please use letters only.';
+    } elseif (!$isContactValid) {
+        $error = 'Invalid Contact Number. It must be 11 digits and start with 09.';
     } elseif (!$isEmailValid) {
         $error = 'Invalid Email format.';
     } elseif ($password !== $confirmPassword) {
@@ -295,7 +301,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 Number</label>
                             <input id="d_contact_number" name="contact_number" type="text" required
                                 class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                placeholder="Ex: 09123456789" value="<?= htmlspecialchars($contactNumber ?? '') ?>">
+                                placeholder="Ex: 09123456789" value="<?= htmlspecialchars($contactNumber ?? '') ?>"
+                                pattern="09[0-9]{9}" maxlength="11" minlength="11" title="Contact number must be 11 digits and start with 09"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                         </div>
 
                         <!-- Branch -->
@@ -563,7 +571,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <div class="relative mb-6">
                                 <input type="text" id="m_contact_number" name="contact_number" required
                                     class="peer block w-full appearance-none rounded-xl border border-gray-300 bg-white px-4 pb-2 pt-6 text-[15px] font-medium text-gray-900 focus:border-blue-600 focus:ring-1 focus:ring-blue-600 focus:outline-none transition-all"
-                                    placeholder=" " value="<?= htmlspecialchars($contactNumber ?? '') ?>" />
+                                    placeholder=" " value="<?= htmlspecialchars($contactNumber ?? '') ?>"
+                                    pattern="09[0-9]{9}" maxlength="11" minlength="11" title="Contact number must be 11 digits and start with 09"
+                                    oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
                                 <label for="m_contact_number"
                                     class="absolute top-2 left-4 z-10 origin-[0] -translate-y-0 scale-75 transform text-[15px] text-gray-500 duration-300 peer-placeholder-shown:translate-y-2 peer-placeholder-shown:scale-100 peer-focus:-translate-y-0 peer-focus:scale-[0.8] peer-focus:text-blue-600 pointer-events-none transition-all">Mobile
                                     number</label>
