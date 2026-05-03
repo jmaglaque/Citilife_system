@@ -42,7 +42,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_locked) {
     $password = $_POST['password'] ?? '';
 
     if (!empty($email) && !empty($password)) {
-        // Prepare statement to fetch user by email
+        // VALIDATION using filter_var();
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $error = "Invalid email format.";
+        } else {
+            // Prepare statement to fetch user by email
         $stmt = $pdo->prepare('SELECT * FROM users WHERE email = :email LIMIT 1');
         $stmt->execute(['email' => $email]);
         $user = $stmt->fetch();
@@ -92,7 +96,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_locked) {
                 }
             }
         }
-    } else {
+    }
+} else {
         $error = 'Please enter both email and password.';
     }
 }

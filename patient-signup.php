@@ -53,11 +53,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $branchId = null;
 
     $email = trim($_POST['email'] ?? '');
+    // SANITATION using filter_var();
+    $email = filter_var($email, FILTER_SANITIZE_EMAIL);
+
     $password = $_POST['password'] ?? '';
     $confirmPassword = $_POST['confirm_password'] ?? '';
 
+    // VALIDATION using preg_match();
+    $namePattern = "/^[a-zA-Z\s]+$/";
+    $isNameValid = preg_match($namePattern, $firstName) && preg_match($namePattern, $lastName);
+
+    // VALIDATION using filter_var();
+    $isEmailValid = filter_var($email, FILTER_VALIDATE_EMAIL);
+
     if (empty($firstName) || empty($lastName) || empty($age) || empty($email) || empty($password) || empty($branchId)) {
         $error = 'Please fill out all required fields.';
+    } elseif (!$isNameValid) {
+        $error = 'Invalid Name. Please use letters only.';
+    } elseif (!$isEmailValid) {
+        $error = 'Invalid Email format.';
     } elseif ($password !== $confirmPassword) {
         $error = 'Passwords do not match.';
     } else {
@@ -234,7 +248,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 <?php endif; ?>
 
-                <form method="POST" action="" class="space-y-6">
+                <form method="POST" action="" class="space-y-6" novalidate>
                     <!-- Identifies which form was sent (optional check) -->
                     <input type="hidden" name="form_type" value="desktop">
 
@@ -469,7 +483,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <?php endif; ?>
 
                 <form id="signupFormMobile" method="POST" action="" class="flex-grow flex flex-col justify-between"
-                    onkeydown="return event.key != 'Enter';">
+                    onkeydown="return event.key != 'Enter';" novalidate>
                     <!-- Identifies which form was sent -->
                     <input type="hidden" name="form_type" value="mobile">
 

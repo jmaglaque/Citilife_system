@@ -33,8 +33,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_locked) {
     $password = $_POST['password'] ?? '';
 
     if (!empty($email) && !empty($password)) {
-        // Prepare statement to fetch user by email along with patient name
-        $stmt = $pdo->prepare('
+        // VALIDATION using filter_var();
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $error = "Invalid email format.";
+        } else {
+            // Prepare statement to fetch user by email along with patient name
+            $stmt = $pdo->prepare('
             SELECT u.*, p.first_name, p.last_name 
             FROM users u 
             LEFT JOIN patients p ON u.patient_id = p.id 
@@ -92,7 +96,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_locked) {
                 }
             }
         }
-    } else {
+    }
+} else {
         $error = 'Please enter both email and password.';
     }
 }
